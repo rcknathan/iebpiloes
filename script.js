@@ -1,12 +1,12 @@
 // --------------------------------------------
-// 🔥 Firebase Import (usando CDN para funcionar no navegador)
+// 🔥 Firebase Import (CDN para navegador)
 // --------------------------------------------
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
 import { 
   getFirestore, collection, addDoc, getDocs, updateDoc, deleteDoc, doc 
 } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
-// 🔥 Firebase Config
+// 🔥 Configuração do Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyCaji1-Lp0_lA_6lBBCIsiO3vSxEwVnK18",
   authDomain: "ieb-piloes-sistema.firebaseapp.com",
@@ -24,7 +24,7 @@ const db = getFirestore(app);
 const membrosRef = collection(db, "membros");
 
 // --------------------------------------------
-// 🔵 Funções Firestore (substituindo localStorage)
+// 🔵 Funções Firestore
 // --------------------------------------------
 
 // LISTAR TODOS
@@ -95,7 +95,7 @@ async function renderTable(filter = '') {
 }
 
 // --------------------------------------------
-// 🔵 Aniversariantes
+// 🔵 Renderizar Aniversariantes
 // --------------------------------------------
 async function renderBirthdays() {
   const members = await getMembers();
@@ -166,6 +166,8 @@ form.addEventListener('submit', async (e) => {
   renderBirthdays();
 });
 
+// --------------------------------------------
+// 🔵 Editar e Deletar (globais)
 window.editMember = async function(id) {
   const members = await getMembers();
   const m = members.find(x => x.id === id);
@@ -199,7 +201,7 @@ function formatDate(dateStr) {
 }
 
 // --------------------------------------------
-// 🔵 Eventos
+// 🔵 Filtro de pesquisa e mês
 // --------------------------------------------
 const searchInput = document.getElementById('searchInput');
 searchInput.addEventListener('input', () => renderTable(searchInput.value));
@@ -208,6 +210,67 @@ const monthFilter = document.getElementById('monthFilter');
 const orderFilter = document.getElementById('orderFilter');
 monthFilter.addEventListener('change', renderBirthdays);
 orderFilter.addEventListener('change', renderBirthdays);
+
+// --------------------------------------------
+// 🔵 Impressão
+// --------------------------------------------
+document.getElementById('printBtn').addEventListener('click', async () => {
+  const members = await getMembers();
+  if (members.length === 0) {
+    alert('Nenhum membro cadastrado.');
+    return;
+  }
+
+  let printContent = `
+    <html>
+      <head>
+        <title>Lista de Membros - IEB</title>
+        <style>
+          body { font-family: Arial, sans-serif; padding: 20px; }
+          h2 { text-align: center; margin-bottom: 20px; color: #041e43; }
+          table { width: 100%; border-collapse: collapse; }
+          th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+          th { background: #041e43; color: white; }
+          tr:nth-child(even) { background: #f9f9f9; }
+        </style>
+      </head>
+      <body>
+        <h2>Lista de Membros - IEB Pilões</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Nome</th>
+              <th>Data de Nascimento</th>
+              <th>Contato</th>
+              <th>Batizado</th>
+            </tr>
+          </thead>
+          <tbody>
+  `;
+
+  members.forEach(m => {
+    printContent += `
+      <tr>
+        <td>${m.nome}</td>
+        <td>${formatDate(m.nascimento)}</td>
+        <td>${m.contato}</td>
+        <td>${m.batizado}</td>
+      </tr>
+    `;
+  });
+
+  printContent += `
+          </tbody>
+        </table>
+      </body>
+    </html>
+  `;
+
+  const printWindow = window.open('', '', 'width=900,height=600');
+  printWindow.document.write(printContent);
+  printWindow.document.close();
+  printWindow.print();
+});
 
 // --------------------------------------------
 // 🔵 Inicialização
