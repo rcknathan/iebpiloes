@@ -1,6 +1,4 @@
-document.getElementById("loginForm").addEventListener("submit", function(e) {
-  e.preventDefault();
-
+export function login() {
   const user = document.getElementById("loginUser").value.trim();
   const pass = document.getElementById("loginPass").value.trim();
 
@@ -14,4 +12,4 @@ document.getElementById("loginForm").addEventListener("submit", function(e) {
     errorMsg.style.display = "block";
     errorMsg.textContent = "Usuário ou senha incorretos!";
   }
-});
+}

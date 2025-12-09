@@ -65,14 +65,19 @@
   <div class="login-container">
     <h2>IEB Pilões</h2>
 
-    <input type="text" id="user" placeholder="Usuário" />
-    <input type="password" id="pass" placeholder="Senha" />
+    <input type="text" id="loginUser" placeholder="Usuário" />
+    <input type="password" id="loginPass" placeholder="Senha" />
 
     <button onclick="login()">Entrar</button>
 
-    <p id="error" class="error-msg">Usuário ou senha incorretos.</p>
+    <p id="errorMsg" class="error-msg"></p>
   </div>
 
-  <script type="module" src="login.js"></script>
+  <!-- Importando função login do arquivo -->
+  <script type="module">
+    import { login } from './login.js';
+    window.login = login; // libera a função pro botão
+  </script>
+
 </body>
 </html>
