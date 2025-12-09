@@ -1,12 +1,11 @@
-// --------------------------------------------
-// 🔥 Firebase Import
-// --------------------------------------------
+// ==============================
+// ======= FIREBASE =============
+// ==============================
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
 import { 
-  getFirestore, collection, addDoc, getDocs, updateDoc, deleteDoc, doc 
+  getFirestore, collection, getDocs, addDoc, updateDoc, deleteDoc, doc 
 } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
 
-// 🔥 Firebase Config
 const firebaseConfig = {
   apiKey: "AIzaSyCaji1-Lp0_lA_6lBBCIsiO3vSxEwVnK18",
   authDomain: "ieb-piloes-sistema.firebaseapp.com",
@@ -16,34 +15,38 @@ const firebaseConfig = {
   appId: "1:351930661090:web:efe375e08aa65871eb46bb"
 };
 
-// Inicializar Firebase
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
-const membrosRef = collection(db, "membros");
 
-// --------------------------------------------
-// 🔵 Firestore Functions
-// --------------------------------------------
+// ==============================
+// ======= FIRESTORE CRUD =======
+// ==============================
 async function getMembers() {
-  const snap = await getDocs(membrosRef);
-  return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  const snap = await getDocs(collection(db, "membros"));
+  const data = [];
+  snap.forEach(docSnap => data.push({ id: docSnap.id, ...docSnap.data() }));
+  return data;
 }
 
-async function addMember(member) {
-  await addDoc(membrosRef, member);
+async function saveMember(member) {
+  await addDoc(collection(db, "membros"), member);
 }
 
 async function updateMember(id, member) {
   await updateDoc(doc(db, "membros", id), member);
 }
 
-async function deleteMemberDB(id) {
+async function deleteMemberById(id) {
   await deleteDoc(doc(db, "membros", id));
 }
 
-// --------------------------------------------
-// 🔵 Controle de abas
-// --------------------------------------------
+function sortMembersByName(members) {
+  return members.sort((a, b) => a.nome.localeCompare(b.nome));
+}
+
+// ==============================
+// ======= CONTROLE DE ABAS =====
+// ==============================
 const tabButtons = document.querySelectorAll('.tab-btn');
 const tabContents = document.querySelectorAll('.tab-content');
 
@@ -57,21 +60,29 @@ tabButtons.forEach(btn => {
   });
 });
 
-// --------------------------------------------
-// 🔵 Renderizar Tabela
-// --------------------------------------------
+// ==============================
+// ======= ELEMENTOS DOM ========
+// ==============================
+const form = document.getElementById('memberForm');
+const tableBody = document.querySelector('#membersTable tbody');
+const birthdayList = document.getElementById('birthdayList');
+const searchInput = document.getElementById('searchInput');
+const monthFilter = document.getElementById('monthFilter');
+const orderFilter = document.getElementById('orderFilter');
+
+// ==============================
+// ======= RENDER TABELA ========
+// ==============================
 async function renderTable(filter = '') {
   let members = await getMembers();
-  members.sort((a, b) => a.nome.localeCompare(b.nome));
+  members = sortMembersByName(members);
 
   const filtered = members.filter(m =>
     m.nome.toLowerCase().includes(filter.toLowerCase())
   );
 
-  const tableBody = document.querySelector('#membersTable tbody');
   tableBody.innerHTML = '';
-
-  filtered.forEach((m) => {
+  filtered.forEach(m => {
     const tr = document.createElement('tr');
     tr.innerHTML = `
       <td>${m.nome}</td>
@@ -87,16 +98,31 @@ async function renderTable(filter = '') {
   });
 }
 
-// --------------------------------------------
-// 🔵 Renderizar Aniversariantes
-// --------------------------------------------
+// ==============================
+// ======= ANIVERSARIANTES ======
+// ==============================
+function renderMonthOptions() {
+  const months = [
+    'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+    'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+  ];
+  monthFilter.innerHTML = '';
+  months.forEach((m, i) => {
+    const option = document.createElement('option');
+    option.value = i;
+    option.textContent = m;
+    monthFilter.appendChild(option);
+  });
+  monthFilter.value = new Date().getMonth();
+}
+
 async function renderBirthdays() {
   const members = await getMembers();
   const month = parseInt(monthFilter.value);
   const order = orderFilter.value;
 
-  let monthMembers = members.filter(m =>
-    new Date(m.nascimento).getMonth() === month
+  let monthMembers = members.filter(
+    m => new Date(m.nascimento).getMonth() === month
   );
 
   if (order === 'nome') {
@@ -105,9 +131,7 @@ async function renderBirthdays() {
     monthMembers.sort((a, b) => new Date(a.nascimento) - new Date(b.nascimento));
   }
 
-  const birthdayList = document.getElementById('birthdayList');
   birthdayList.innerHTML = '';
-
   if (monthMembers.length === 0) {
     birthdayList.innerHTML = '<p style="text-align:center; color:#555;">Nenhum aniversariante neste mês.</p>';
     return;
@@ -119,44 +143,56 @@ async function renderBirthdays() {
   birthdayList.appendChild(div);
 
   monthMembers.forEach(m => {
+    const dateObj = new Date(m.nascimento);
+    const formattedDate = dateObj.toLocaleDateString('pt-BR', {
+      day: '2-digit', month: '2-digit', year: 'numeric'
+    });
+
     const card = document.createElement('div');
     card.classList.add('birthday-card');
-    card.innerHTML = `
-      <span class="birthday-name">${m.nome}</span>
-      <span class="birthday-date">${formatDate(m.nascimento)}</span>
-    `;
+
+    const nameElem = document.createElement('span');
+    nameElem.classList.add('birthday-name');
+    nameElem.textContent = m.nome;
+
+    const dateElem = document.createElement('span');
+    dateElem.classList.add('birthday-date');
+    dateElem.textContent = formattedDate;
+
+    card.appendChild(nameElem);
+    card.appendChild(dateElem);
     birthdayList.appendChild(card);
   });
 }
 
-// --------------------------------------------
-// 🔵 Formulário
-// --------------------------------------------
-const form = document.getElementById('memberForm');
-form.addEventListener('submit', async (e) => {
+// ==============================
+// ======= FORM SUBMIT ==========
+// ==============================
+form.addEventListener('submit', async e => {
   e.preventDefault();
   const nome = document.getElementById('nome').value;
   const nascimento = document.getElementById('nascimento').value;
   const contato = document.getElementById('contato').value;
   const batizado = document.getElementById('batizado').value;
-  const editId = document.getElementById('editIndex').value;
+  const editIndex = document.getElementById('editIndex').value;
 
   const memberData = { nome, nascimento, contato, batizado };
 
-  if (editId) {
-    await updateMember(editId, memberData);
-    document.getElementById('editIndex').value = "";
+  if (editIndex) {
+    await updateMember(editIndex, memberData);
+    document.getElementById('editIndex').value = '';
   } else {
-    await addMember(memberData);
+    await saveMember(memberData);
   }
 
   form.reset();
-  renderTable();
+  renderTable(searchInput.value);
   renderBirthdays();
 });
 
-// --------------------------------------------
-// 🔵 Editar e Deletar (globais)
+// ==============================
+// ======= EDITAR MEMBRO ========
+// ==============================
 window.editMember = async function(id) {
   const members = await getMembers();
   const m = members.find(x => x.id === id);
@@ -168,44 +204,41 @@ window.editMember = async function(id) {
   document.getElementById('editIndex').value = id;
 
   tabButtons.forEach(b => b.classList.remove('active'));
-  tabContents.forEach(c => c.style.display = 'none');
-
+  tabContents.forEach(content => content.style.display = 'none');
   document.querySelector('.tab-btn[data-tab="cadastro"]').classList.add('active');
   document.getElementById('cadastro').style.display = 'block';
 };
 
+// ==============================
+// ======= EXCLUIR MEMBRO =======
+// ==============================
 window.deleteMember = async function(id) {
   if (!confirm('Deseja excluir este membro?')) return;
-  await deleteMemberDB(id);
-  renderTable();
+  await deleteMemberById(id);
+  renderTable(searchInput.value);
   renderBirthdays();
 };
 
-// --------------------------------------------
-// 🔵 Utilitários
-// --------------------------------------------
+// ==============================
+// ======= FORMATAR DATA ========
+// ==============================
 function formatDate(dateStr) {
   const date = new Date(dateStr);
-  return date.toLocaleDateString("pt-BR");
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const year = date.getFullYear();
+  return `${day}/${month}/${year}`;
 }
 
-// --------------------------------------------
-// 🔵 Filtros
-// --------------------------------------------
-const searchInput = document.getElementById('searchInput');
-searchInput.addEventListener('input', () => renderTable(searchInput.value));
-
-const monthFilter = document.getElementById('monthFilter');
-const orderFilter = document.getElementById('orderFilter');
-monthFilter.addEventListener('change', renderBirthdays);
-orderFilter.addEventListener('change', renderBirthdays);
-
-// --------------------------------------------
-// 🔵 Impressão
-// --------------------------------------------
+// ==============================
+// ======= IMPRIMIR ==============
+// ==============================
 document.getElementById('printBtn').addEventListener('click', async () => {
   const members = await getMembers();
-  if (members.length === 0) { alert('Nenhum membro cadastrado.'); return; }
+  if (members.length === 0) {
+    alert('Nenhum membro cadastrado.');
+    return;
+  }
 
   let printContent = `
     <html>
@@ -258,20 +291,16 @@ document.getElementById('printBtn').addEventListener('click', async () => {
   printWindow.print();
 });
 
-// --------------------------------------------
-// 🔵 Inicialização
-// --------------------------------------------
-function renderMonthOptions() {
-  const months = [
-    'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
-    'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
-  ];
-  monthFilter.innerHTML = months
-    .map((m, i) => `<option value="${i}">${m}</option>`)
-    .join('');
-  monthFilter.value = new Date().getMonth();
-}
+// ==============================
+// ======= EVENTOS ==============
+// ==============================
+searchInput.addEventListener('input', () => renderTable(searchInput.value));
+monthFilter.addEventListener('change', renderBirthdays);
+orderFilter.addEventListener('change', renderBirthdays);
 
+// ==============================
+// ======= INICIALIZAR ==========
+// ==============================
 renderMonthOptions();
 renderTable();
 renderBirthdays();
