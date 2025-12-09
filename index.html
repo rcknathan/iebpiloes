@@ -3,92 +3,75 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>IEBPILÕES - Gestão</title>
+  <title>Login - IEBPILÕES</title>
   <link rel="stylesheet" href="style.css">
-  <link rel="icon" href="img/favicon.png" type="image/png">
+  <style>
+    body {
+      background-color: #041e43; /* Cor do header */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .login-container {
+      background: #fff;
+      padding: 25px;
+      width: 350px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      text-align: center;
+    }
+
+    .login-container h2 {
+      margin-bottom: 15px;
+      color: #041e43;
+    }
+
+    .login-container label {
+      margin-top: 10px;
+      text-align: left;
+      width: 100%;
+      display: block;
+    }
+
+    .error-msg {
+      color: red;
+      margin-top: 10px;
+      display: none;
+      font-size: 0.9em;
+    }
+  </style>
 </head>
 <body>
-  <header>
-    <img src="img/logo.png" alt="IEBPILÕES" class="logo">
 
-    <!-- Nav de abas -->
-    <nav class="tabs">
-      <button class="tab-btn active" data-tab="cadastro">Cadastro</button>
-      <button class="tab-btn" data-tab="membros">Membros</button>
-      <button class="tab-btn" data-tab="aniversariantes">Aniversariantes</button>
-    </nav>
-  </header>
-  
-  <main>
-    <!-- Aba Cadastro -->
-    <section id="cadastro" class="tab-content">
-      <form id="memberForm">
-        <input type="hidden" id="editIndex" value="">
-        <label>Nome Completo:</label>
-        <input type="text" id="nome" required>
+  <div class="login-container">
+    <h2>IEB Pilões - Entrar</h2>
 
-        <label>Data de Nascimento:</label>
-        <input type="date" id="nascimento" required>
+    <label for="user">Usuário</label>
+    <input type="text" id="user" placeholder="Digite seu usuário">
 
-        <label>Contato:</label>
-        <input type="text" id="contato" required>
+    <label for="pass">Senha</label>
+    <input type="password" id="pass" placeholder="Digite sua senha">
 
-        <label>Batizado:</label>
-        <select id="batizado" required>
-          <option value="Sim">Sim</option>
-          <option value="Não">Não</option>
-        </select>
+    <button onclick="login()">Entrar</button>
 
-        <button type="submit">Salvar</button>
-      </form>
-    </section>
+    <div class="error-msg" id="errorMsg">Usuário ou senha incorretos!</div>
+  </div>
 
-    <!-- Aba Membros -->
-    <section id="membros" class="tab-content" style="display:none;">
-      <div class="search-container">
-        <label>Pesquisar Membro:</label>
-        <input type="text" id="searchInput" placeholder="Digite um nome...">
-      </div>
+  <script>
+    function login() {
+      const user = document.getElementById('user').value.trim();
+      const pass = document.getElementById('pass').value.trim();
+      const errorMsg = document.getElementById('errorMsg');
 
-      <button id="printBtn">Imprimir</button>
+      if (user === "iebpiloes" && pass === "602398") {
+        window.location.href = "page.html";
+      } else {
+        errorMsg.style.display = "block";
+      }
+    }
+  </script>
 
-      <div class="table-wrapper">
-        <table id="membersTable">
-          <thead>
-            <tr>
-              <th>Nome</th>
-              <th>Nascimento</th>
-              <th>Contato</th>
-              <th>Batizado</th>
-              <th>Ações</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
-      </div>
-    </section>
-
-    <!-- Aba Aniversariantes -->
-    <section id="aniversariantes" class="tab-content" style="display:none;">
-      <div class="filters">
-        <div>
-          <label>Mês:</label>
-          <select id="monthFilter"></select>
-        </div>
-
-        <div>
-          <label>Ordenar por:</label>
-          <select id="orderFilter">
-            <option value="data">Data</option>
-            <option value="nome">Nome</option>
-          </select>
-        </div>
-      </div>
-
-      <div id="birthdayList"></div>
-    </section>
-  </main>
-
-  <script type="module" src="script.js"></script>
 </body>
 </html>
