@@ -12,6 +12,7 @@
       align-items: center;
       height: 100vh;
       background: #f2f2f2;
+      margin: 0;
     }
 
     .login-container {
@@ -34,6 +35,7 @@
       margin: 10px 0;
       border-radius: 6px;
       border: 1px solid #ccc;
+      font-size: 1rem;
     }
 
     .login-container button {
@@ -62,22 +64,18 @@
 </head>
 <body>
 
-  <div class="login-container">
-    <h2>IEB Pilões</h2>
+  <div class="login-container" role="main" aria-labelledby="title">
+    <h2 id="title">IEB Pilões</h2>
 
-    <input type="text" id="loginUser" placeholder="Usuário" />
-    <input type="password" id="loginPass" placeholder="Senha" />
+    <input type="text" id="loginUser" placeholder="Usuário" autocomplete="username" />
+    <input type="password" id="loginPass" placeholder="Senha" autocomplete="current-password" />
 
-    <button onclick="login()">Entrar</button>
+    <button id="loginBtn">Entrar</button>
 
-    <p id="errorMsg" class="error-msg"></p>
+    <p id="errorMsg" class="error-msg" aria-live="polite"></p>
   </div>
 
-  <!-- Importando função login do arquivo -->
-  <script type="module">
-    import { login } from './login.js';
-    window.login = login; // libera a função pro botão
-  </script>
-
+  <!-- script simples (não-module) — funciona em file:// e HTTP -->
+  <script src="login.js"></script>
 </body>
 </html>
