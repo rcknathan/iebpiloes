@@ -15,11 +15,13 @@
     <nav class="tabs">
       <button class="tab-btn active" data-tab="cadastro">Cadastro</button>
       <button class="tab-btn" data-tab="membros">Membros</button>
+      <button class="tab-btn" data-tab="infantil">Infantil</button>
       <button class="tab-btn" data-tab="aniversariantes">Aniversariantes</button>
     </nav>
   </header>
   
   <main>
+
     <!-- Aba Cadastro -->
     <section id="cadastro" class="tab-content">
       <form id="memberForm">
@@ -68,6 +70,31 @@
       </div>
     </section>
 
+    <!-- Aba Infantil -->
+    <section id="infantil" class="tab-content" style="display:none;">
+      <div class="search-container">
+        <label>Pesquisar Criança:</label>
+        <input type="text" id="searchInfantil" placeholder="Digite um nome...">
+      </div>
+
+      <button id="printInfantilBtn">Imprimir</button>
+
+      <div class="table-wrapper">
+        <table id="infantilTable">
+          <thead>
+            <tr>
+              <th>Nome</th>
+              <th>Nascimento</th>
+              <th>Contato</th>
+              <th>Batizado</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
     <!-- Aba Aniversariantes -->
     <section id="aniversariantes" class="tab-content" style="display:none;">
       <div class="filters">
@@ -87,6 +114,7 @@
 
       <div id="birthdayList"></div>
     </section>
+
   </main>
 
   <script type="module" src="script.js"></script>

@@ -1,9 +1,9 @@
-// ==============================
-// ======= FIREBASE =============
-// ==============================
+// ===============================
+// ===== FIREBASE CONFIG =========
+// ===============================
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
-import { 
-  getFirestore, collection, getDocs, addDoc, updateDoc, deleteDoc, doc 
+import {
+  getFirestore, collection, getDocs, addDoc, updateDoc, deleteDoc, doc
 } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -18,9 +18,9 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// ==============================
-// ======= FIRESTORE CRUD =======
-// ==============================
+// ===============================
+// ===== FIRESTORE CRUD ==========
+// ===============================
 async function getMembers() {
   const snap = await getDocs(collection(db, "membros"));
   const data = [];
@@ -44,9 +44,9 @@ function sortMembersByName(members) {
   return members.sort((a, b) => a.nome.localeCompare(b.nome));
 }
 
-// ==============================
-// ======= CONTROLE DE ABAS =====
-// ==============================
+// ===============================
+// ===== CONTROLE DE ABAS ========
+// ===============================
 const tabButtons = document.querySelectorAll('.tab-btn');
 const tabContents = document.querySelectorAll('.tab-content');
 
@@ -55,27 +55,48 @@ tabButtons.forEach(btn => {
     const tab = btn.dataset.tab;
     tabButtons.forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
-    tabContents.forEach(content => content.style.display = 'none');
+    tabContents.forEach(sec => sec.style.display = 'none');
     document.getElementById(tab).style.display = 'block';
   });
 });
 
-// ==============================
-// ======= ELEMENTOS DOM ========
-// ==============================
+// ===============================
+// ===== ELEMENTOS DOM ===========
+// ===============================
 const form = document.getElementById('memberForm');
 const tableBody = document.querySelector('#membersTable tbody');
+const tableInfantilBody = document.querySelector('#infantilTable tbody');
+
 const birthdayList = document.getElementById('birthdayList');
 const searchInput = document.getElementById('searchInput');
+const searchInfantil = document.getElementById('searchInfantil');
 const monthFilter = document.getElementById('monthFilter');
 const orderFilter = document.getElementById('orderFilter');
 
-// ==============================
-// ======= RENDER TABELA ========
-// ==============================
+// ===============================
+// ===== FUNÇÃO IDADE ============
+// ===============================
+function getAge(dateStr) {
+  const today = new Date();
+  const birth = new Date(dateStr);
+  let age = today.getFullYear() - birth.getFullYear();
+  const m = today.getMonth() - birth.getMonth();
+
+  if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
+    age--;
+  }
+  return age;
+}
+
+// ===============================
+// ===== TABELA MEMBROS ==========
+// ===============================
 async function renderTable(filter = '') {
   let members = await getMembers();
   members = sortMembersByName(members);
+
+  // só maiores de 10
+  members = members.filter(m => getAge(m.nascimento) > 10);
 
   const filtered = members.filter(m =>
     m.nome.toLowerCase().includes(filter.toLowerCase())
@@ -98,21 +119,54 @@ async function renderTable(filter = '') {
   });
 }
 
-// ==============================
-// ======= ANIVERSARIANTES ======
-// ==============================
+// ===============================
+// ===== TABELA INFANTIL =========
+// ===============================
+async function renderInfantil(filter = '') {
+  let members = await getMembers();
+  members = sortMembersByName(members);
+
+  // apenas 0 a 10 anos
+  members = members.filter(m => getAge(m.nascimento) <= 10);
+
+  const filtered = members.filter(m =>
+    m.nome.toLowerCase().includes(filter.toLowerCase())
+  );
+
+  tableInfantilBody.innerHTML = '';
+  filtered.forEach(m => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${m.nome}</td>
+      <td>${formatDate(m.nascimento)}</td>
+      <td>${m.contato}</td>
+      <td>${m.batizado}</td>
+      <td>
+        <button onclick="editMember('${m.id}')">Editar</button>
+        <button onclick="deleteMember('${m.id}')" style="background:#e53935;">Excluir</button>
+      </td>
+    `;
+    tableInfantilBody.appendChild(tr);
+  });
+}
+
+// ===============================
+// ===== ANIVERSARIANTES =========
+// ===============================
 function renderMonthOptions() {
   const months = [
-    'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
-    'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+    'Janeiro','Fevereiro','Março','Abril','Maio','Junho',
+    'Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'
   ];
+
   monthFilter.innerHTML = '';
   months.forEach((m, i) => {
-    const option = document.createElement('option');
-    option.value = i;
-    option.textContent = m;
-    monthFilter.appendChild(option);
+    const opt = document.createElement('option');
+    opt.value = i;
+    opt.textContent = m;
+    monthFilter.appendChild(opt);
   });
+
   monthFilter.value = new Date().getMonth();
 }
 
@@ -121,19 +175,20 @@ async function renderBirthdays() {
   const month = parseInt(monthFilter.value);
   const order = orderFilter.value;
 
-  let monthMembers = members.filter(
+  let filtered = members.filter(
     m => new Date(m.nascimento).getMonth() === month
   );
 
-  if (order === 'nome') {
-    monthMembers.sort((a, b) => a.nome.localeCompare(b.nome));
+  if (order === "nome") {
+    filtered.sort((a, b) => a.nome.localeCompare(b.nome));
   } else {
-    monthMembers.sort((a, b) => new Date(a.nascimento) - new Date(b.nascimento));
+    filtered.sort((a, b) => new Date(a.nascimento) - new Date(b.nascimento));
   }
 
   birthdayList.innerHTML = '';
-  if (monthMembers.length === 0) {
-    birthdayList.innerHTML = '<p style="text-align:center; color:#555;">Nenhum aniversariante neste mês.</p>';
+
+  if (filtered.length === 0) {
+    birthdayList.innerHTML = '<p style="text-align:center;color:#555;">Nenhum aniversariante neste mês.</p>';
     return;
   }
 
@@ -142,9 +197,9 @@ async function renderBirthdays() {
   div.textContent = monthFilter.options[month].textContent;
   birthdayList.appendChild(div);
 
-  monthMembers.forEach(m => {
+  filtered.forEach(m => {
     const dateObj = new Date(m.nascimento);
-    const formattedDate = dateObj.toLocaleDateString('pt-BR', {
+    const formatted = dateObj.toLocaleDateString('pt-BR', {
       day: '2-digit', month: '2-digit', year: 'numeric'
     });
 
@@ -157,7 +212,7 @@ async function renderBirthdays() {
 
     const dateElem = document.createElement('span');
     dateElem.classList.add('birthday-date');
-    dateElem.textContent = formattedDate;
+    dateElem.textContent = formatted;
 
     card.appendChild(nameElem);
     card.appendChild(dateElem);
@@ -165,34 +220,36 @@ async function renderBirthdays() {
   });
 }
 
-// ==============================
-// ======= FORM SUBMIT ==========
-// ==============================
+// ===============================
+// ===== FORM SUBMIT =============
+// ===============================
 form.addEventListener('submit', async e => {
   e.preventDefault();
+
   const nome = document.getElementById('nome').value;
   const nascimento = document.getElementById('nascimento').value;
   const contato = document.getElementById('contato').value;
   const batizado = document.getElementById('batizado').value;
   const editIndex = document.getElementById('editIndex').value;
 
-  const memberData = { nome, nascimento, contato, batizado };
+  const data = { nome, nascimento, contato, batizado };
 
   if (editIndex) {
-    await updateMember(editIndex, memberData);
+    await updateMember(editIndex, data);
     document.getElementById('editIndex').value = '';
   } else {
-    await saveMember(memberData);
+    await saveMember(data);
   }
 
   form.reset();
   renderTable(searchInput.value);
+  renderInfantil(searchInfantil.value);
   renderBirthdays();
 });
 
-// ==============================
-// ======= EDITAR MEMBRO ========
-// ==============================
+// ===============================
+// ===== EDITAR MEMBRO ===========
+// ===============================
 window.editMember = async function(id) {
   const members = await getMembers();
   const m = members.find(x => x.id === id);
@@ -203,72 +260,89 @@ window.editMember = async function(id) {
   document.getElementById('batizado').value = m.batizado;
   document.getElementById('editIndex').value = id;
 
-  tabButtons.forEach(b => b.classList.remove('active'));
-  tabContents.forEach(content => content.style.display = 'none');
-  document.querySelector('.tab-btn[data-tab="cadastro"]').classList.add('active');
-  document.getElementById('cadastro').style.display = 'block';
+  document.querySelector('.tab-btn[data-tab="cadastro"]').click();
 };
 
-// ==============================
-// ======= EXCLUIR MEMBRO =======
-// ==============================
+// ===============================
+// ===== EXCLUIR MEMBRO ==========
+// ===============================
 window.deleteMember = async function(id) {
-  if (!confirm('Deseja excluir este membro?')) return;
+  if (!confirm("Deseja excluir este membro?")) return;
   await deleteMemberById(id);
   renderTable(searchInput.value);
+  renderInfantil(searchInfantil.value);
   renderBirthdays();
 };
 
-// ==============================
-// ======= FORMATAR DATA ========
-// ==============================
+// ===============================
+// ===== FORMATAR DATA ===========
+// ===============================
 function formatDate(dateStr) {
   const date = new Date(dateStr);
-  const day = String(date.getDate()).padStart(2, '0');
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const year = date.getFullYear();
-  return `${day}/${month}/${year}`;
+  const d = String(date.getDate()).padStart(2, '0');
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const y = date.getFullYear();
+  return `${d}/${m}/${y}`;
 }
 
-// ==============================
-// ======= IMPRIMIR ==============
-// ==============================
+// ===============================
+// ===== IMPRESSÃO MEMBROS =======
+// ===============================
 document.getElementById('printBtn').addEventListener('click', async () => {
-  const members = await getMembers();
+  let members = await getMembers();
+  members = members.filter(m => getAge(m.nascimento) > 10);
+
   if (members.length === 0) {
-    alert('Nenhum membro cadastrado.');
+    alert("Nenhum membro para imprimir.");
     return;
   }
 
-  let printContent = `
+  printGeneric(members, "Lista de Membros - IEB");
+});
+
+// ===============================
+// ===== IMPRESSÃO INFANTIL ======
+// ===============================
+document.getElementById('printInfantilBtn').addEventListener('click', async () => {
+  let members = await getMembers();
+  members = members.filter(m => getAge(m.nascimento) <= 10);
+
+  if (members.length === 0) {
+    alert("Nenhuma criança para imprimir.");
+    return;
+  }
+
+  printGeneric(members, "Lista de Crianças - Departamento Infantil");
+});
+
+// função genérica para imprimir
+function printGeneric(list, title) {
+  let html = `
     <html>
       <head>
-        <title>Lista de Membros - IEB</title>
+        <title>${title}</title>
         <style>
-          body { font-family: Arial, sans-serif; padding: 20px; }
-          h2 { text-align: center; margin-bottom: 20px; color: #041e43; }
-          table { width: 100%; border-collapse: collapse; }
-          th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
-          th { background: #041e43; color: white; }
-          tr:nth-child(even) { background: #f9f9f9; }
+          body { font-family: Arial; padding: 20px; }
+          h2 { text-align:center; color:#041e43; margin-bottom:20px; }
+          table { width:100%; border-collapse:collapse; }
+          th, td { border:1px solid #ccc; padding:8px; text-align:center; }
+          th { background:#041e43; color:white; }
+          tr:nth-child(even){ background:#f9f9f9; }
         </style>
       </head>
       <body>
-        <h2>Lista de Membros - IEB Pilões</h2>
+        <h2>${title}</h2>
         <table>
-          <thead>
-            <tr>
-              <th>Nome</th>
-              <th>Data de Nascimento</th>
-              <th>Contato</th>
-              <th>Batizado</th>
-            </tr>
-          </thead>
-          <tbody>
+          <tr>
+            <th>Nome</th>
+            <th>Nascimento</th>
+            <th>Contato</th>
+            <th>Batizado</th>
+          </tr>
   `;
 
-  members.forEach(m => {
-    printContent += `
+  list.forEach(m => {
+    html += `
       <tr>
         <td>${m.nome}</td>
         <td>${formatDate(m.nascimento)}</td>
@@ -278,29 +352,31 @@ document.getElementById('printBtn').addEventListener('click', async () => {
     `;
   });
 
-  printContent += `
-          </tbody>
+  html += `
         </table>
       </body>
     </html>
   `;
 
-  const printWindow = window.open('', '', 'width=900,height=600');
-  printWindow.document.write(printContent);
-  printWindow.document.close();
-  printWindow.print();
-});
+  const win = window.open('', '', 'width=900,height=600');
+  win.document.write(html);
+  win.document.close();
+  win.print();
+}
 
-// ==============================
-// ======= EVENTOS ==============
-// ==============================
+// ===============================
+// ===== EVENTOS =================
+// ===============================
 searchInput.addEventListener('input', () => renderTable(searchInput.value));
+searchInfantil.addEventListener('input', () => renderInfantil(searchInfantil.value));
+
 monthFilter.addEventListener('change', renderBirthdays);
 orderFilter.addEventListener('change', renderBirthdays);
 
-// ==============================
-// ======= INICIALIZAR ==========
-// ==============================
+// ===============================
+// ===== INICIALIZAR =============
+// ===============================
 renderMonthOptions();
 renderTable();
+renderInfantil();
 renderBirthdays();

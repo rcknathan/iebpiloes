@@ -133,38 +133,41 @@ button:hover {
 
 /* -------- Tabela rolável com cabeçalho fixo e scroll invisível -------- */
 .table-wrapper {
-  max-height: 340px;       /* Altura máxima visível da tabela */
-  overflow-y: auto;        /* Rolagem vertical */
-  overflow-x: auto;        /* Permite rolagem horizontal */
+  max-height: 340px;
+  overflow-y: auto;
+  overflow-x: auto;
   border-radius: 8px;
   box-shadow: 0 4px 10px rgba(0,0,0,0.1);
   margin-top: 6px;
 
-  /* Scroll invisível */
-  scrollbar-width: none;       /* Firefox */
-  -ms-overflow-style: none;    /* IE 10+ */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
 .table-wrapper::-webkit-scrollbar {
-  width: 0px;   /* Chrome, Safari, Opera */
+  width: 0px;
   height: 0px;
 }
 
-#membersTable {
+/* ---- ESTILO UNIFICADO PARA AS DUAS TABELAS ---- */
+#membersTable, 
+#infantilTable {
   width: 100%;
   border-collapse: collapse;
   background: #fff;
 }
 
-#membersTable th, #membersTable td {
+#membersTable th, #membersTable td,
+#infantilTable th, #infantilTable td {
   border: 1px solid #ddd;
   padding: 10px;
   text-align: center;
   white-space: nowrap;
 }
 
-/* Cabeçalho fixo da tabela */
-#membersTable thead th {
+/* Cabeçalho fixo das duas tabelas */
+#membersTable thead th,
+#infantilTable thead th {
   position: sticky;
   top: 0;
   background: #041e43;
@@ -190,7 +193,7 @@ button:hover {
   width: 150px;
 }
 
-/* -------- Lista de aniversariantes com mês fixo -------- */
+/* -------- Lista de aniversariantes -------- */
 #birthdayList {
   max-height: 400px;
   overflow-y: auto;
@@ -200,13 +203,12 @@ button:hover {
   box-shadow: 0 4px 10px rgba(0,0,0,0.15);
   margin-top: 20px;
 
-  /* Scroll invisível */
-  scrollbar-width: none;       /* Firefox */
-  -ms-overflow-style: none;    /* IE 10+ */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
 #birthdayList::-webkit-scrollbar {
-  width: 0px;   /* Chrome, Safari, Opera */
+  width: 0px;
 }
 
 .month {
@@ -219,7 +221,6 @@ button:hover {
   margin-bottom: 10px;
   text-align: center;
 
-  /* Cabeçalho fixo */
   position: sticky;
   top: 0;
   z-index: 2;
@@ -285,7 +286,8 @@ button:hover {
     padding: 15px;
   }
 
-  #membersTable th, #membersTable td {
+  #membersTable th, #membersTable td,
+  #infantilTable th, #infantilTable td {
     padding: 8px;
     font-size: 0.9em;
   }
@@ -293,7 +295,6 @@ button:hover {
 
 /* -------- Ajustes específicos para celular pequeno -------- */
 @media (max-width: 400px) {
-  /* Cabeçalho */
   header {
     padding: 10px 5px;
   }
@@ -302,7 +303,6 @@ button:hover {
     width: 150px;
   }
 
-  /* Abas */
   .tabs {
     flex-direction: column;
     gap: 5px;
@@ -314,7 +314,6 @@ button:hover {
     padding: 8px;
   }
 
-  /* Formulário */
   form {
     padding: 10px;
   }
@@ -324,7 +323,6 @@ button:hover {
     padding: 6px;
   }
 
-  /* Busca e filtros */
   .search-container, .filters {
     padding: 8px;
     gap: 8px;
@@ -334,17 +332,16 @@ button:hover {
     width: 100%;
   }
 
-  /* Tabela */
   .table-wrapper {
-    max-height: 300px; /* reduz altura para caber melhor na tela */
+    max-height: 300px;
   }
 
-  #membersTable th, #membersTable td {
+  #membersTable th, #membersTable td,
+  #infantilTable th, #infantilTable td {
     padding: 5px;
     font-size: 0.8em;
   }
 
-  /* Lista de aniversariantes */
   #birthdayList {
     max-height: 300px;
     padding: 10px;
@@ -364,10 +361,8 @@ button:hover {
     font-size: 0.75em;
   }
 
-  /* Botões */
   button, #printBtn {
     font-size: 0.85em;
     padding: 8px;
   }
 }
-
