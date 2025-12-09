@@ -1,81 +1,94 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Login - IEB Pilões</title>
-  <link rel="stylesheet" href="style.css" />
-  <style>
-    body {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      background: #f2f2f2;
-      margin: 0;
-    }
-
-    .login-container {
-      background: #fff;
-      padding: 25px;
-      width: 320px;
-      border-radius: 12px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-      text-align: center;
-    }
-
-    .login-container h2 {
-      margin-bottom: 20px;
-      color: #041e43;
-    }
-
-    .login-container input {
-      width: 100%;
-      padding: 10px;
-      margin: 10px 0;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-      font-size: 1rem;
-    }
-
-    .login-container button {
-      width: 100%;
-      padding: 10px;
-      background: #041e43;
-      color: #fff;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      font-weight: bold;
-      margin-top: 10px;
-    }
-
-    .login-container button:hover {
-      background: #03132a;
-    }
-
-    .error-msg {
-      color: red;
-      font-size: 0.9em;
-      margin-top: 10px;
-      display: none;
-    }
-  </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IEBPILÕES - Gestão</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="img/favicon.png" type="image/png">
 </head>
 <body>
+  <header>
+    <img src="img/logo.png" alt="IEBPILÕES" class="logo">
 
-  <div class="login-container" role="main" aria-labelledby="title">
-    <h2 id="title">IEB Pilões</h2>
+    <!-- Nav de abas -->
+    <nav class="tabs">
+      <button class="tab-btn active" data-tab="cadastro">Cadastro</button>
+      <button class="tab-btn" data-tab="membros">Membros</button>
+      <button class="tab-btn" data-tab="aniversariantes">Aniversariantes</button>
+    </nav>
+  </header>
+  
+  <main>
+    <!-- Aba Cadastro -->
+    <section id="cadastro" class="tab-content">
+      <form id="memberForm">
+        <input type="hidden" id="editIndex" value="">
+        <label>Nome Completo:</label>
+        <input type="text" id="nome" required>
 
-    <input type="text" id="loginUser" placeholder="Usuário" autocomplete="username" />
-    <input type="password" id="loginPass" placeholder="Senha" autocomplete="current-password" />
+        <label>Data de Nascimento:</label>
+        <input type="date" id="nascimento" required>
 
-    <button id="loginBtn">Entrar</button>
+        <label>Contato:</label>
+        <input type="text" id="contato" required>
 
-    <p id="errorMsg" class="error-msg" aria-live="polite"></p>
-  </div>
+        <label>Batizado:</label>
+        <select id="batizado" required>
+          <option value="Sim">Sim</option>
+          <option value="Não">Não</option>
+        </select>
 
-  <!-- script simples (não-module) — funciona em file:// e HTTP -->
-  <script src="login.js"></script>
+        <button type="submit">Salvar</button>
+      </form>
+    </section>
+
+    <!-- Aba Membros -->
+    <section id="membros" class="tab-content" style="display:none;">
+      <div class="search-container">
+        <label>Pesquisar Membro:</label>
+        <input type="text" id="searchInput" placeholder="Digite um nome...">
+      </div>
+
+      <button id="printBtn">Imprimir</button>
+
+      <div class="table-wrapper">
+        <table id="membersTable">
+          <thead>
+            <tr>
+              <th>Nome</th>
+              <th>Nascimento</th>
+              <th>Contato</th>
+              <th>Batizado</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Aba Aniversariantes -->
+    <section id="aniversariantes" class="tab-content" style="display:none;">
+      <div class="filters">
+        <div>
+          <label>Mês:</label>
+          <select id="monthFilter"></select>
+        </div>
+
+        <div>
+          <label>Ordenar por:</label>
+          <select id="orderFilter">
+            <option value="data">Data</option>
+            <option value="nome">Nome</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="birthdayList"></div>
+    </section>
+  </main>
+
+  <script type="module" src="script.js"></script>
 </body>
 </html>
