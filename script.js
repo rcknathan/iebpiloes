@@ -1,12 +1,12 @@
 // --------------------------------------------
-// 🔥 Firebase Import (CDN para navegador)
+// 🔥 Firebase Import
 // --------------------------------------------
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
 import { 
   getFirestore, collection, addDoc, getDocs, updateDoc, deleteDoc, doc 
-} from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+} from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
 
-// 🔥 Configuração do Firebase
+// 🔥 Firebase Config
 const firebaseConfig = {
   apiKey: "AIzaSyCaji1-Lp0_lA_6lBBCIsiO3vSxEwVnK18",
   authDomain: "ieb-piloes-sistema.firebaseapp.com",
@@ -19,31 +19,24 @@ const firebaseConfig = {
 // Inicializar Firebase
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
-
-// Coleção
 const membrosRef = collection(db, "membros");
 
 // --------------------------------------------
-// 🔵 Funções Firestore
+// 🔵 Firestore Functions
 // --------------------------------------------
-
-// LISTAR TODOS
 async function getMembers() {
   const snap = await getDocs(membrosRef);
   return snap.docs.map(d => ({ id: d.id, ...d.data() }));
 }
 
-// ADICIONAR
 async function addMember(member) {
   await addDoc(membrosRef, member);
 }
 
-// ATUALIZAR
 async function updateMember(id, member) {
   await updateDoc(doc(db, "membros", id), member);
 }
 
-// DELETAR
 async function deleteMemberDB(id) {
   await deleteDoc(doc(db, "membros", id));
 }
@@ -128,12 +121,10 @@ async function renderBirthdays() {
   monthMembers.forEach(m => {
     const card = document.createElement('div');
     card.classList.add('birthday-card');
-
     card.innerHTML = `
       <span class="birthday-name">${m.nome}</span>
       <span class="birthday-date">${formatDate(m.nascimento)}</span>
     `;
-
     birthdayList.appendChild(card);
   });
 }
@@ -142,10 +133,8 @@ async function renderBirthdays() {
 // 🔵 Formulário
 // --------------------------------------------
 const form = document.getElementById('memberForm');
-
 form.addEventListener('submit', async (e) => {
   e.preventDefault();
-
   const nome = document.getElementById('nome').value;
   const nascimento = document.getElementById('nascimento').value;
   const contato = document.getElementById('contato').value;
@@ -201,7 +190,7 @@ function formatDate(dateStr) {
 }
 
 // --------------------------------------------
-// 🔵 Filtro de pesquisa e mês
+// 🔵 Filtros
 // --------------------------------------------
 const searchInput = document.getElementById('searchInput');
 searchInput.addEventListener('input', () => renderTable(searchInput.value));
@@ -216,10 +205,7 @@ orderFilter.addEventListener('change', renderBirthdays);
 // --------------------------------------------
 document.getElementById('printBtn').addEventListener('click', async () => {
   const members = await getMembers();
-  if (members.length === 0) {
-    alert('Nenhum membro cadastrado.');
-    return;
-  }
+  if (members.length === 0) { alert('Nenhum membro cadastrado.'); return; }
 
   let printContent = `
     <html>
