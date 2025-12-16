@@ -74,11 +74,20 @@ const monthFilter = document.getElementById('monthFilter');
 const orderFilter = document.getElementById('orderFilter');
 
 // ===============================
+// ===== FIX DATA LOCAL =========
+// ===============================
+function parseLocalDate(dateStr) {
+  const [y, m, d] = dateStr.split('-').map(Number);
+  return new Date(y, m - 1, d);
+}
+
+// ===============================
 // ===== FUNÇÃO IDADE ============
 // ===============================
 function getAge(dateStr) {
   const today = new Date();
-  const birth = new Date(dateStr);
+  const birth = parseLocalDate(dateStr);
+
   let age = today.getFullYear() - birth.getFullYear();
   const m = today.getMonth() - birth.getMonth();
 
@@ -95,7 +104,6 @@ async function renderTable(filter = '') {
   let members = await getMembers();
   members = sortMembersByName(members);
 
-  // só maiores de 10
   members = members.filter(m => getAge(m.nascimento) > 10);
 
   const filtered = members.filter(m =>
@@ -126,7 +134,6 @@ async function renderInfantil(filter = '') {
   let members = await getMembers();
   members = sortMembersByName(members);
 
-  // apenas 0 a 10 anos
   members = members.filter(m => getAge(m.nascimento) <= 10);
 
   const filtered = members.filter(m =>
@@ -176,13 +183,15 @@ async function renderBirthdays() {
   const order = orderFilter.value;
 
   let filtered = members.filter(
-    m => new Date(m.nascimento).getMonth() === month
+    m => parseLocalDate(m.nascimento).getMonth() === month
   );
 
   if (order === "nome") {
     filtered.sort((a, b) => a.nome.localeCompare(b.nome));
   } else {
-    filtered.sort((a, b) => new Date(a.nascimento) - new Date(b.nascimento));
+    filtered.sort((a, b) =>
+      parseLocalDate(a.nascimento) - parseLocalDate(b.nascimento)
+    );
   }
 
   birthdayList.innerHTML = '';
@@ -198,10 +207,8 @@ async function renderBirthdays() {
   birthdayList.appendChild(div);
 
   filtered.forEach(m => {
-    const dateObj = new Date(m.nascimento);
-    const formatted = dateObj.toLocaleDateString('pt-BR', {
-      day: '2-digit', month: '2-digit', year: 'numeric'
-    });
+    const dateObj = parseLocalDate(m.nascimento);
+    const formatted = dateObj.toLocaleDateString('pt-BR');
 
     const card = document.createElement('div');
     card.classList.add('birthday-card');
@@ -278,7 +285,7 @@ window.deleteMember = async function(id) {
 // ===== FORMATAR DATA ===========
 // ===============================
 function formatDate(dateStr) {
-  const date = new Date(dateStr);
+  const date = parseLocalDate(dateStr);
   const d = String(date.getDate()).padStart(2, '0');
   const m = String(date.getMonth() + 1).padStart(2, '0');
   const y = date.getFullYear();
