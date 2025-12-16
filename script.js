@@ -74,27 +74,30 @@ const monthFilter = document.getElementById('monthFilter');
 const orderFilter = document.getElementById('orderFilter');
 
 // ===============================
-// ===== FIX DATA LOCAL =========
-// ===============================
-function parseLocalDate(dateStr) {
-  const [y, m, d] = dateStr.split('-').map(Number);
-  return new Date(y, m - 1, d);
-}
-
-// ===============================
-// ===== FUNÇÃO IDADE ============
+// ===== FUNÇÃO IDADE (SEGURA) ====
 // ===============================
 function getAge(dateStr) {
+  if (!dateStr) return 0;
+  const [y, m, d] = dateStr.split('-').map(Number);
+  const birth = new Date(y, m - 1, d);
   const today = new Date();
-  const birth = parseLocalDate(dateStr);
 
   let age = today.getFullYear() - birth.getFullYear();
-  const m = today.getMonth() - birth.getMonth();
+  const diffMonth = today.getMonth() - birth.getMonth();
 
-  if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
+  if (diffMonth < 0 || (diffMonth === 0 && today.getDate() < birth.getDate())) {
     age--;
   }
   return age;
+}
+
+// ===============================
+// ===== FORMATAR DATA (STRING) ==
+// ===============================
+function formatDate(dateStr) {
+  if (!dateStr) return '';
+  const [y, m, d] = dateStr.split('-');
+  return `${d}/${m}/${y}`;
 }
 
 // ===============================
@@ -182,16 +185,16 @@ async function renderBirthdays() {
   const month = parseInt(monthFilter.value);
   const order = orderFilter.value;
 
-  let filtered = members.filter(
-    m => parseLocalDate(m.nascimento).getMonth() === month
-  );
+  let filtered = members.filter(m => {
+    if (!m.nascimento) return false;
+    const mMonth = parseInt(m.nascimento.split('-')[1], 10) - 1;
+    return mMonth === month;
+  });
 
   if (order === "nome") {
     filtered.sort((a, b) => a.nome.localeCompare(b.nome));
   } else {
-    filtered.sort((a, b) =>
-      parseLocalDate(a.nascimento) - parseLocalDate(b.nascimento)
-    );
+    filtered.sort((a, b) => a.nascimento.localeCompare(b.nascimento));
   }
 
   birthdayList.innerHTML = '';
@@ -207,9 +210,6 @@ async function renderBirthdays() {
   birthdayList.appendChild(div);
 
   filtered.forEach(m => {
-    const dateObj = parseLocalDate(m.nascimento);
-    const formatted = dateObj.toLocaleDateString('pt-BR');
-
     const card = document.createElement('div');
     card.classList.add('birthday-card');
 
@@ -219,7 +219,7 @@ async function renderBirthdays() {
 
     const dateElem = document.createElement('span');
     dateElem.classList.add('birthday-date');
-    dateElem.textContent = formatted;
+    dateElem.textContent = formatDate(m.nascimento);
 
     card.appendChild(nameElem);
     card.appendChild(dateElem);
@@ -282,17 +282,6 @@ window.deleteMember = async function(id) {
 };
 
 // ===============================
-// ===== FORMATAR DATA ===========
-// ===============================
-function formatDate(dateStr) {
-  const date = parseLocalDate(dateStr);
-  const d = String(date.getDate()).padStart(2, '0');
-  const m = String(date.getMonth() + 1).padStart(2, '0');
-  const y = date.getFullYear();
-  return `${d}/${m}/${y}`;
-}
-
-// ===============================
 // ===== IMPRESSÃO MEMBROS =======
 // ===============================
 document.getElementById('printBtn').addEventListener('click', async () => {
@@ -322,7 +311,9 @@ document.getElementById('printInfantilBtn').addEventListener('click', async () =
   printGeneric(members, "Lista de Crianças - Departamento Infantil");
 });
 
-// função genérica para imprimir
+// ===============================
+// ===== PRINT GENÉRICO ==========
+// ===============================
 function printGeneric(list, title) {
   let html = `
     <html>
@@ -376,7 +367,6 @@ function printGeneric(list, title) {
 // ===============================
 searchInput.addEventListener('input', () => renderTable(searchInput.value));
 searchInfantil.addEventListener('input', () => renderInfantil(searchInfantil.value));
-
 monthFilter.addEventListener('change', renderBirthdays);
 orderFilter.addEventListener('change', renderBirthdays);
 
